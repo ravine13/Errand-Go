@@ -24,7 +24,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig  {
 
-    private final CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsService  userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
