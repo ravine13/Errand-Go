@@ -7,11 +7,10 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "payment")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class Payment {
 
     @Id
@@ -40,6 +39,13 @@ public class Payment {
 
     @Column(name = "commission_pct")
     private Float commissionPct = 0f;
+
+    @Column(name = "admin_share", precision = 10, scale = 2)
+    private BigDecimal adminShare;
+
+    @Column(name = "errand_boy_share", precision = 10, scale = 2)
+    private BigDecimal errandBoyShare;
+
 
     public enum PaymentStatus {
         SUCCESS,
