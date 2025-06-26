@@ -3,10 +3,9 @@ package com.errandGo.backend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Data
 @Entity
 @Table(name = "errand_boy")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,5 +23,6 @@ public class ErrandBoy {
 
     @Column(name = "average_rating")
     private Float averageRating = 0f;
+
 
 }
