@@ -26,9 +26,30 @@ public class ErrandBoyService {
     }
 
     // ✅ Create a new errand boy
+    @Transactional
     public ErrandBoy createErrandBoy(ErrandBoy errandBoy) {
+        if (errandBoy.getEmail() == null || errandBoy.getEmail().isBlank()) {
+            String baseEmail = errandBoy.getFullName()
+                    .toLowerCase()
+                    .replaceAll("\\s+", "") + "@errandboy.com";
+
+            String email = baseEmail;
+            int count = 1;
+
+            // ensure uniqueness
+            while (errandBoyRepository.existsByEmail(email)) {
+                email = errandBoy.getFullName()
+                        .toLowerCase()
+                        .replaceAll("\\s+", "") + count + "@errandboy.com";
+                count++;
+            }
+
+            errandBoy.setEmail(email);
+        }
+
         return errandBoyRepository.save(errandBoy);
     }
+
 
     // ✅ Update an errand boy
     @Transactional

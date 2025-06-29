@@ -1,5 +1,6 @@
 package com.errandGo.backend.security;
 
+import com.errandGo.backend.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig  {
 
-    private final CustomUserDetailsService  userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;

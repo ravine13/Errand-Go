@@ -3,6 +3,7 @@ package com.errandGo.backend.security;
 
 
 
+import com.errandGo.backend.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

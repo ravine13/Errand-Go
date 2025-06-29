@@ -5,11 +5,11 @@ import lombok.*;
 
 @Data
 @Entity
-@Table(name = "errand_boy")
+@Table(name = "admin")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ErrandBoy {
+public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,17 +18,12 @@ public class ErrandBoy {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "is_online")
-    private Boolean isOnline = false;
+    @Column(nullable = false)
+    private String password;
 
-    @Column(name = "total_completed_tasks")
-    private Integer totalCompletedTasks = 0;
-
-    @Column(name = "average_rating")
-    private Float averageRating = 0f;
-
-
+    @Column
+    private String phoneNumber;
 }

@@ -12,4 +12,7 @@ import java.util.Optional;
 public interface ErrandBoyRepository extends JpaRepository<ErrandBoy, Long> {
     @Query("SELECT r FROM ErrandBoy r WHERE r.id = :id ")
     Optional<ErrandBoy> findById(@Param("id") Long id);
+
+    boolean existsByEmail(String email);
+
 }
