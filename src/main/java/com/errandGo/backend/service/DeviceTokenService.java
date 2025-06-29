@@ -28,7 +28,7 @@ public class DeviceTokenService {
 
     // ✅ Get device token by token string
     public Optional<DeviceToken> getDeviceTokenByToken(String token) {
-        return deviceTokenRepository.findByToken(token);
+        return deviceTokenRepository.findByDeviceToken(token);
     }
 
     // ✅ Get device token by account ID

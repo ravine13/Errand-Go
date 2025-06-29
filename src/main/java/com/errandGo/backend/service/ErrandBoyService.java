@@ -4,6 +4,8 @@ import com.errandGo.backend.entities.ErrandBoy;
 import com.errandGo.backend.repositories.ErrandBoyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,55 +15,57 @@ import java.util.List;
 public class ErrandBoyService {
 
     private final ErrandBoyRepository errandBoyRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // ✅ Get all errand boys
     public List<ErrandBoy> getAllErrandBoys() {
         return errandBoyRepository.findAll();
     }
 
-    // ✅ Get one errand boy by ID
     public ErrandBoy getErrandBoyById(Long id) {
         return errandBoyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Errand boy not found"));
     }
 
-    // ✅ Create a new errand boy
     @Transactional
     public ErrandBoy createErrandBoy(ErrandBoy errandBoy) {
         if (errandBoy.getEmail() == null || errandBoy.getEmail().isBlank()) {
             String baseEmail = errandBoy.getFullName()
                     .toLowerCase()
-                    .replaceAll("\\s+", "") + "@errandboy.com";
+                    .replaceAll("\\s+", "") + "@errands.com";
 
             String email = baseEmail;
             int count = 1;
 
-            // ensure uniqueness
             while (errandBoyRepository.existsByEmail(email)) {
                 email = errandBoy.getFullName()
                         .toLowerCase()
-                        .replaceAll("\\s+", "") + count + "@errandboy.com";
+                        .replaceAll("\\s+", "") + count + "@errands.com";
                 count++;
             }
 
             errandBoy.setEmail(email);
         }
 
+        errandBoy.setPassword(passwordEncoder.encode(errandBoy.getPassword()));
         return errandBoyRepository.save(errandBoy);
     }
 
-
-    // ✅ Update an errand boy
     @Transactional
     public ErrandBoy updateErrandBoy(Long id, ErrandBoy updated) {
         ErrandBoy existing = getErrandBoyById(id);
         existing.setIsOnline(updated.getIsOnline());
         existing.setAverageRating(updated.getAverageRating());
         existing.setTotalCompletedTasks(updated.getTotalCompletedTasks());
+
+        if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(updated.getPassword()));
+        }
+
         return errandBoyRepository.save(existing);
     }
 
-    // ✅ Delete an errand boy
+    // ✅ Only ADMINs can delete
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteErrandBoy(Long id) {
         if (!errandBoyRepository.existsById(id)) {
             throw new IllegalArgumentException("Errand boy not found");

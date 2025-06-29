@@ -4,6 +4,7 @@ import com.errandGo.backend.entities.Admin;
 import com.errandGo.backend.repositories.AdminRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.List;
 public class AdminService {
 
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     public List<Admin> getAllAdmins() {
         return adminRepository.findAll();
@@ -28,7 +31,7 @@ public class AdminService {
         if (admin.getEmail() == null || admin.getEmail().isBlank()) {
             String baseEmail = admin.getFullName()
                     .toLowerCase()
-                    .replaceAll("\\s+", "") + "@admin.errandboy.com";
+                    .replaceAll("\\s+", "") + "@admin.com";
 
             String email = baseEmail;
             int count = 1;
@@ -36,12 +39,13 @@ public class AdminService {
             while (adminRepository.existsByEmail(email)) {
                 email = admin.getFullName()
                         .toLowerCase()
-                        .replaceAll("\\s+", "") + count + "@admin.errandboy.com";
+                        .replaceAll("\\s+", "") + count + "@admin.com";
                 count++;
             }
 
             admin.setEmail(email);
         }
+        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
 
         return adminRepository.save(admin);
     }
