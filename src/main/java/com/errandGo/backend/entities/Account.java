@@ -100,4 +100,8 @@ public class Account {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
