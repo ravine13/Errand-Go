@@ -1,9 +1,7 @@
 package com.errandGo.backend.controller;
 
-
-
-import com.errandGo.backend.entities.User;
-import com.errandGo.backend.repositories.UserRepository;
+import com.errandGo.backend.entities.Account;
+import com.errandGo.backend.repositories.AccountRepository;
 import com.errandGo.backend.security.JwtUtil;
 import com.errandGo.backend.service.CustomUserDetailsService;
 import model.AuthenticationRequest;
@@ -33,7 +31,7 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserRepository userRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -41,32 +39,34 @@ public class AuthController {
     @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
-            // Authenticate user
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(
+                            authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()
+                    )
             );
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.UNAUTHORIZED);
         }
 
-        // Load user details
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        Account account = accountRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        String jwt = jwtUtil.generateToken(account);
+
+        return ResponseEntity.ok(new AuthenticationResponse(jwt, account.getRole().name()));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser.isPresent()) {
+    public ResponseEntity<?> registerUser(@RequestBody Account account) {
+        Optional<Account> existingAccount = accountRepository.findByUsername(account.getUsername());
+        if (existingAccount.isPresent()) {
             return new ResponseEntity<>("Username already exists", HttpStatus.CONFLICT);
         }
 
-        // Hash password and save user
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+        accountRepository.save(account);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account registered successfully");
     }
 }

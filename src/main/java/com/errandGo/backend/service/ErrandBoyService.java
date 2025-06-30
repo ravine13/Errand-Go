@@ -28,18 +28,25 @@ public class ErrandBoyService {
 
     @Transactional
     public ErrandBoy createErrandBoy(ErrandBoy errandBoy) {
+
+//        System.out.println("Incoming password: " + errandBoy.getPassword());
+        if (errandBoy.getPassword() == null || errandBoy.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password cannot be null or blank");
+        }
+
         if (errandBoy.getEmail() == null || errandBoy.getEmail().isBlank()) {
             String baseEmail = errandBoy.getFullName()
                     .toLowerCase()
-                    .replaceAll("\\s+", "") + "@errands.com";
+                    .replaceAll("\\s+", "") + "@errandboy.com";
 
             String email = baseEmail;
             int count = 1;
 
+            // ensure uniqueness
             while (errandBoyRepository.existsByEmail(email)) {
                 email = errandBoy.getFullName()
                         .toLowerCase()
-                        .replaceAll("\\s+", "") + count + "@errands.com";
+                        .replaceAll("\\s+", "") + count + "@errandboy.com";
                 count++;
             }
 
@@ -49,6 +56,7 @@ public class ErrandBoyService {
         errandBoy.setPassword(passwordEncoder.encode(errandBoy.getPassword()));
         return errandBoyRepository.save(errandBoy);
     }
+
 
     @Transactional
     public ErrandBoy updateErrandBoy(Long id, ErrandBoy updated) {

@@ -1,6 +1,6 @@
 package com.errandGo.backend.security;
 
-
+import com.errandGo.backend.entities.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,7 +8,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -19,16 +18,16 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    private String SECRET_KEY = "secret";
-
-
-    public JwtUtil() throws NoSuchAlgorithmException {
-    }
+    public JwtUtil() throws NoSuchAlgorithmException {}
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 
     public Date extractExpiration(String token) {
@@ -41,25 +40,30 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+        return Jwts.parser()
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    // Accepts Account entity instead of User
+    public String generateToken(Account account) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
+        claims.put("role", account.getRole().name()); // Embed role
+        return createToken(claims, account.getUsername());
     }
 
-    public String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours validity
-                .signWith(key) // Use the generated secure key
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .signWith(key)
                 .compact();
     }
 

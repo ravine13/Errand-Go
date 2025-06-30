@@ -15,15 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig  {
+public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
@@ -33,10 +33,6 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/authenticate", "/register","/test/**","/users/**", "/admins").permitAll()
-                                .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
@@ -45,8 +41,18 @@ public class SecurityConfig  {
                     configuration.setAllowedHeaders(Arrays.asList("*"));
                     return configuration;
                 }))
-                .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .securityContext(request -> request.securityContextRepository(securityContextRepository))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .securityContext(context -> context.securityContextRepository(securityContextRepository))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers("/authenticate", "/register", "/test/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/errand-boy/**").hasRole("ERRAND_BOY")
+                        .requestMatchers("/user/**").hasRole("USER")
+
+
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -67,5 +73,4 @@ public class SecurityConfig  {
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         return daoAuthenticationProvider;
     }
-
 }

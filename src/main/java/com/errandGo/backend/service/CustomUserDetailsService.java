@@ -1,48 +1,44 @@
 package com.errandGo.backend.service;
 
-
-
-import java.util.ArrayList;
-import java.util.Optional;
-
-
-import com.errandGo.backend.entities.User;
-import com.errandGo.backend.repositories.UserRepository;
+import com.errandGo.backend.entities.Account;
+import com.errandGo.backend.repositories.AccountRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-
-
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UserRepository userRepository;
+    private AccountRepository accountRepository;
 
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("GETTING USER PASSED ########" + username);
+        log.info("Authenticating user: {}", username);
 
+        Optional<Account> accountOptional = accountRepository.findByUsername(username);
 
-        Optional<User> userOptional = userRepository.findByUsername(username);
-
-        // Check if the user is present
-        if (userOptional.isEmpty()) {
-            System.out.println("User not found");
+        if (accountOptional.isEmpty()) {
+            log.warn("Account not found for username: {}", username);
             throw new UsernameNotFoundException("Username not found");
         }
 
-        User user = userOptional.get();
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), new ArrayList<>());
+        Account account = accountOptional.get();
+
+        return new org.springframework.security.core.userdetails.User(
+                account.getUsername(),
+                account.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
+        );
     }
 }
-

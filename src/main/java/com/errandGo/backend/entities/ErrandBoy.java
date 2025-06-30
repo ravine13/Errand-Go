@@ -1,6 +1,7 @@
 package com.errandGo.backend.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,10 +23,6 @@ public class ErrandBoy {
     @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
-    @JsonIgnore
-    private String password;
-
     @Column(name = "is_online")
     private Boolean isOnline = false;
 
@@ -35,7 +32,6 @@ public class ErrandBoy {
     @Column(name = "average_rating")
     private Float averageRating = 0f;
 
-    public void setPassword(String encodedPassword) {
-        this.password = encodedPassword;
-    }
+    @JsonProperty("password") // explicitly map password
+    private String password;
 }
