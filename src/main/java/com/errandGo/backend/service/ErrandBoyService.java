@@ -43,7 +43,7 @@ public class ErrandBoyService {
             int count = 1;
 
             // ensure uniqueness
-            while (errandBoyRepository.existsByEmail(email)) {
+            while (errandBoyRepository.existsByAccount_Email(email)) {
                 email = errandBoy.getFullName()
                         .toLowerCase()
                         .replaceAll("\\s+", "") + count + "@errandboy.com";

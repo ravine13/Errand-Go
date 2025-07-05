@@ -23,20 +23,20 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("Authenticating user: {}", username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.info("Authenticating user by email: {}", email);
 
-        Optional<Account> accountOptional = accountRepository.findByUsername(username);
+        Optional<Account> accountOptional = accountRepository.findByEmail(email);
 
         if (accountOptional.isEmpty()) {
-            log.warn("Account not found for username: {}", username);
-            throw new UsernameNotFoundException("Username not found");
+            log.warn("Account not found for email: {}", email);
+            throw new UsernameNotFoundException("Email not found");
         }
 
         Account account = accountOptional.get();
 
         return new org.springframework.security.core.userdetails.User(
-                account.getUsername(),
+                account.getEmail(),
                 account.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
         );
