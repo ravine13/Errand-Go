@@ -1,16 +1,12 @@
 package com.errandGo.backend.entities;
 
-
 import jakarta.persistence.*;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.Data;
 import model.Role;
 
 @Entity
 @Table(name = "account")
+@Data
 public class Account {
 
     @Id
@@ -36,72 +32,17 @@ public class Account {
     @Column(nullable = false)
     private Role role;
 
-    // Constructors
-    public Account() {}
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
-    public Account(String username, String email, String password, String location, String deviceToken, Role role) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.location = location;
-        this.deviceToken = deviceToken;
-        this.role = role;
-    }
+    @Column(name = "profile_picture", columnDefinition = "TEXT")
+    private String profilePicture;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "latitude")
+    private Double latitude;
 
-    public String getUsername() {
-        return username;
-    }
+    @Column(name = "longitude")
+    private Double longitude;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getDeviceToken() {
-        return deviceToken;
-    }
-
-    public void setDeviceToken(String deviceToken) {
-        this.deviceToken = deviceToken;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // No need to manually write constructors or getters/setters — @Data handles that
 }

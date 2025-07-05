@@ -30,7 +30,7 @@ public class ErrandBoyService {
     public ErrandBoy createErrandBoy(ErrandBoy errandBoy) {
 
 //        System.out.println("Incoming password: " + errandBoy.getPassword());
-        if (errandBoy.getPassword() == null || errandBoy.getPassword().isBlank()) {
+        if (errandBoy.getAccount().getPassword() == null || errandBoy.getAccount().getPassword().isBlank()) {
             throw new IllegalArgumentException("Password cannot be null or blank");
         }
 
@@ -50,10 +50,10 @@ public class ErrandBoyService {
                 count++;
             }
 
-            errandBoy.setEmail(email);
+            errandBoy.getAccount().setEmail(email);
         }
 
-        errandBoy.setPassword(passwordEncoder.encode(errandBoy.getPassword()));
+        errandBoy.getAccount().setPassword(passwordEncoder.encode(errandBoy.getAccount().getPassword()));
         return errandBoyRepository.save(errandBoy);
     }
 
@@ -65,8 +65,8 @@ public class ErrandBoyService {
         existing.setAverageRating(updated.getAverageRating());
         existing.setTotalCompletedTasks(updated.getTotalCompletedTasks());
 
-        if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
-            existing.setPassword(passwordEncoder.encode(updated.getPassword()));
+        if (updated.getAccount().getPassword() != null && !updated.getAccount().getPassword().isBlank()) {
+            existing.getAccount().setPassword(passwordEncoder.encode(updated.getAccount().getPassword()));
         }
 
         return errandBoyRepository.save(existing);

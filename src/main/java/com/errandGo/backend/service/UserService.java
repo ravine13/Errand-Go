@@ -40,30 +40,33 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        if (usernameExists(user.getUsername())) {
+        if (usernameExists(user.getAccount().getUsername())) {
             throw new IllegalArgumentException("Username already exists");
         }
-        if (emailExists(user.getEmail())) {
+        if (emailExists(user.getAccount().getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
         return userRepository.save(user);
     }
-
     @Transactional
     public User updateUser(Long id, User updatedUser) {
         User existingUser = getUserById(id);
-        existingUser.setUsername(updatedUser.getUsername());
-        existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
-        existingUser.setLocation(updatedUser.getLocation());
-        existingUser.setProfilePicture(updatedUser.getProfilePicture());
-        existingUser.setRole(updatedUser.getRole());
-        existingUser.setLatitude(updatedUser.getLatitude());
-        existingUser.setLongitude(updatedUser.getLongitude());
+
+        // Update fields in Account (which now contains all shared info)
+        if (existingUser.getAccount() != null && updatedUser.getAccount() != null) {
+            existingUser.getAccount().setUsername(updatedUser.getAccount().getUsername());
+            existingUser.getAccount().setEmail(updatedUser.getAccount().getEmail());
+            existingUser.getAccount().setLocation(updatedUser.getAccount().getLocation());
+            existingUser.getAccount().setRole(updatedUser.getAccount().getRole());
+            existingUser.getAccount().setDeviceToken(updatedUser.getAccount().getDeviceToken());
+            existingUser.getAccount().setPhoneNumber(updatedUser.getAccount().getPhoneNumber());
+            existingUser.getAccount().setProfilePicture(updatedUser.getAccount().getProfilePicture());
+            existingUser.getAccount().setLatitude(updatedUser.getAccount().getLatitude());
+            existingUser.getAccount().setLongitude(updatedUser.getAccount().getLongitude());
+        }
 
         return userRepository.save(existingUser);
     }
-
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new IllegalArgumentException("User not found with ID: " + id);
