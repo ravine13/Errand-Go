@@ -32,6 +32,9 @@ public class ErrandBoy {
         return account.getEmail();
     }
 
+    @Column(name = "full_name")
+    private String fullName;
+
     @JsonIgnore
     public String getFullName() {
         return account.getUsername();

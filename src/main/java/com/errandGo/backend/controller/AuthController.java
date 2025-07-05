@@ -1,11 +1,16 @@
 package com.errandGo.backend.controller;
 
 import com.errandGo.backend.entities.Account;
+import com.errandGo.backend.entities.ErrandBoy;
+import com.errandGo.backend.entities.User;
 import com.errandGo.backend.repositories.AccountRepository;
+import com.errandGo.backend.repositories.ErrandBoyRepository;
+import com.errandGo.backend.repositories.UserRepository;
 import com.errandGo.backend.security.JwtUtil;
 import com.errandGo.backend.service.CustomUserDetailsService;
 import model.AuthenticationRequest;
 import model.AuthenticationResponse;
+import model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +37,12 @@ public class AuthController {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ErrandBoyRepository errandBoyRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -64,9 +75,41 @@ public class AuthController {
             return new ResponseEntity<>("Username already exists", HttpStatus.CONFLICT);
         }
 
-        account.setPassword(passwordEncoder.encode(account.getPassword()));
-        accountRepository.save(account);
+        // Determine role based on email domain
+        String email = account.getEmail();
+        Role role;
+        if (email.endsWith("@errandboy.com")) {
+            role = Role.ERRAND_BOY;
+        } else if (email.endsWith("@gmail.com")) {
+            role = Role.USER;
+        } else {
+            role = Role.ADMIN; // Optional fallback for now
+        }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Account registered successfully");
+        account.setRole(role);
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+
+        Account savedAccount = accountRepository.save(account);
+
+        // Create matching role-specific entity
+        switch (role) {
+            case USER -> {
+                User newUser = new User();
+                newUser.setAccount(savedAccount);
+                userRepository.save(newUser);
+            }
+            case ERRAND_BOY -> {
+                ErrandBoy errandBoy = new ErrandBoy();
+                errandBoy.setAccount(savedAccount);
+                errandBoy.setFullName(savedAccount.getUsername());
+                errandBoyRepository.save(errandBoy);
+            }
+//            case ADMIN -> {
+//                // Admin record can be handled separately if needed
+          //  }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Account registered successfully as " + role.name());
     }
 }
