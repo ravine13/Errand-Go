@@ -29,19 +29,14 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private CustomUserDetailsService userDetailsService;
-
     @Autowired
     private JwtUtil jwtUtil;
-
     @Autowired
     private AccountRepository accountRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private ErrandBoyRepository errandBoyRepository;
 
@@ -76,7 +71,6 @@ public class AuthController {
             return new ResponseEntity<>("Username already exists", HttpStatus.CONFLICT);
         }
 
-        // Determine role based on email domain
         String email = account.getEmail();
         Role role;
         if (email.endsWith("@errandboy.com")) {
@@ -84,15 +78,13 @@ public class AuthController {
         } else if (email.endsWith("@gmail.com")) {
             role = Role.USER;
         } else {
-            role = Role.ADMIN; // Optional fallback for now
+            role = Role.ADMIN;
         }
 
         account.setRole(role);
         account.setPassword(passwordEncoder.encode(account.getPassword()));
-
         Account savedAccount = accountRepository.save(account);
 
-        // Create matching role-specific entity
         switch (role) {
             case USER -> {
                 User newUser = new User();
@@ -106,7 +98,7 @@ public class AuthController {
                 errandBoyRepository.save(errandBoy);
             }
 //            case ADMIN -> {
-//                // Admin record can be handled separately if needed
+//
           //  }
         }
 

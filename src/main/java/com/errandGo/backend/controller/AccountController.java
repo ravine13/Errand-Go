@@ -16,13 +16,13 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    // GET all accounts
+
     @GetMapping
     public ResponseEntity<List<Account>> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
-    // GET account by ID
+
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountById(@PathVariable Long id) {
         Optional<Account> account = accountService.getAccountById(id);
@@ -30,19 +30,19 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST create new account
+
     @PostMapping
     public ResponseEntity<Account> createAccount(@RequestBody Account account) {
         Account saved = accountService.saveAccount(account);
         return ResponseEntity.ok(saved);
     }
 
-    // PUT update account
+
     @PutMapping("/{id}")
     public ResponseEntity<Account> updateAccount(@PathVariable Long id, @RequestBody Account updatedAccount) {
         Optional<Account> existing = accountService.getAccountById(id);
         if (existing.isPresent()) {
-            updatedAccount.setId(id); // Ensure the ID is set
+            updatedAccount.setId(id);
             Account saved = accountService.saveAccount(updatedAccount);
             return ResponseEntity.ok(saved);
         } else {
@@ -50,7 +50,6 @@ public class AccountController {
         }
     }
 
-    // DELETE account
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
         if (accountService.getAccountById(id).isPresent()) {

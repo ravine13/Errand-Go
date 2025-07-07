@@ -4,6 +4,7 @@ import com.errandGo.backend.entities.History;
 import com.errandGo.backend.service.HistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,19 +16,16 @@ public class HistoryController {
 
     private final HistoryService historyService;
 
-    // GET all history records
     @GetMapping
     public ResponseEntity<List<History>> getAllHistory() {
         return ResponseEntity.ok(historyService.getAllHistory());
     }
 
-    // GET a single history record by ID
     @GetMapping("/{id}")
     public ResponseEntity<History> getHistoryById(@PathVariable Long id) {
         return ResponseEntity.ok(historyService.getHistoryById(id));
     }
 
-    // POST: Log a new action for an account
     @PostMapping
     public ResponseEntity<History> logAction(
             @RequestParam Long accountId,
@@ -36,7 +34,7 @@ public class HistoryController {
         return ResponseEntity.ok(historyService.logAction(accountId, action));
     }
 
-    // PUT: Update an existing history record's action
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<History> updateHistory(
             @PathVariable Long id,
@@ -45,7 +43,7 @@ public class HistoryController {
         return ResponseEntity.ok(historyService.updateHistory(id, newAction));
     }
 
-    // DELETE a history record
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteHistory(@PathVariable Long id) {
         historyService.deleteHistory(id);

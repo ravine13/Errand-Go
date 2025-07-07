@@ -44,5 +44,4 @@ public class Account {
     @Column(name = "longitude")
     private Double longitude;
 
-    // No need to manually write constructors or getters/setters — @Data handles that
 }
