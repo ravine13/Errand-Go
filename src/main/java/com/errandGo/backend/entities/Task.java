@@ -2,6 +2,8 @@ package com.errandGo.backend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -52,6 +54,9 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @Column(nullable = false)
+    private BigDecimal amount;
 
     public enum Status {
         PENDING,

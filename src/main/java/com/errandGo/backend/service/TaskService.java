@@ -6,31 +6,31 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final PaymentService paymentService;
 
-    // ✅ Get all tasks
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
-    // ✅ Get a task by ID
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + id));
     }
 
-    // ✅ Create a new task
     public Task createTask(Task task) {
         return taskRepository.save(task);
     }
 
-    // ✅ Update task
     @Transactional
     public Task updateTask(Long id, Task updatedTask) {
         Task existingTask = getTaskById(id);
@@ -52,7 +52,6 @@ public class TaskService {
         return taskRepository.save(existingTask);
     }
 
-    // ✅ Delete task
     public void deleteTask(Long id) {
         if (!taskRepository.existsById(id)) {
             throw new IllegalArgumentException("Task not found with ID: " + id);
@@ -60,13 +59,24 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    // ✅ Get tasks by user ID
     public List<Task> getTasksByUserId(Long userId) {
         return taskRepository.findByUserId(userId);
     }
 
-    // ✅ Get tasks by errand boy ID
     public List<Task> getTasksByErrandBoyId(Long errandBoyId) {
         return taskRepository.findByErrandBoyId(errandBoyId);
+    }
+
+    @Transactional
+    public void completeTask(Long taskId, String paymentMethod, String transactionId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        task.setStatus(Task.Status.COMPLETED); // fix this enum access
+        task.setCompletedAt(LocalDateTime.now()); // optional: mark timestamp
+        taskRepository.save(task);
+
+        BigDecimal amount = task.getAmount();
+        paymentService.createPayment(taskId, amount, paymentMethod, transactionId);
     }
 }
