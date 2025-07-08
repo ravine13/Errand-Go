@@ -25,12 +25,10 @@ public class PaymentService {
         return paymentRepository.findAll();
     }
 
-
     public Payment getPaymentById(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found with id: " + id));
     }
-
 
     @Transactional
     public Payment createPayment(Long taskId, BigDecimal amount, String method, String transactionId) {

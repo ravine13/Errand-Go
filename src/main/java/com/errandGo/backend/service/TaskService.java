@@ -72,8 +72,8 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        task.setStatus(Task.Status.COMPLETED); // fix this enum access
-        task.setCompletedAt(LocalDateTime.now()); // optional: mark timestamp
+        task.setStatus(Task.Status.COMPLETED);
+        task.setCompletedAt(LocalDateTime.now());
         taskRepository.save(task);
 
         BigDecimal amount = task.getAmount();
