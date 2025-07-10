@@ -35,9 +35,6 @@ public class Account {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
-    @Column(name = "profile_picture", columnDefinition = "TEXT")
-    private String profilePicture;
-
     @Column(name = "latitude")
     private Double latitude;
 
