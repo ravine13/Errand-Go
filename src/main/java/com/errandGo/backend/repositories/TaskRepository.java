@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,16 +15,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT r FROM Task r WHERE r.id = :id")
     Optional<Task> findById(@Param("id") long id);
-
     List<Task> findByUserId(Long userId);
-
     List<Task> findByErrandBoyId(Long errandBoyId);
-
     @Query("SELECT SUM(t.amount) FROM Task t WHERE t.status = com.errandGo.backend.entities.Task.Status.COMPLETED")
     BigDecimal getTotalAmountCollected();
 
-
-    @Query("SELECT FUNCTION('DATE_FORMAT', t.createdAt, '%Y-%m-%d') as day, COUNT(t) as total " +
-            "FROM Task t GROUP BY day ORDER BY total DESC")
-    List<Object[]> getTasksGroupedByDay();
+    @Query("SELECT FUNCTION('DATE_FORMAT', t.createdAt, '%Y-%m-%d') as day, COUNT(t) " +
+            "FROM Task t WHERE t.createdAt BETWEEN :startDate AND :endDate " +
+            "GROUP BY day ORDER BY COUNT(t) DESC")
+    List<Object[]> getTasksGroupedByDayBetween(@Param("startDate") LocalDateTime start,
+                                               @Param("endDate") LocalDateTime end);
 }

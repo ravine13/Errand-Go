@@ -5,6 +5,7 @@ import com.errandGo.backend.repositories.TaskRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,29 +19,25 @@ public class AnalyticsService {
         this.taskRepository = taskRepository;
     }
 
-    public AdminReportDTO generateAdminReport() {
+    public AdminReportDTO generateAdminReport(LocalDateTime start, LocalDateTime end) {
+        BigDecimal totalAmount = taskRepository.getTotalAmountCollected();
+        List<Object[]> taskByDay = taskRepository.getTasksGroupedByDayBetween(start, end);
 
         AdminReportDTO report = new AdminReportDTO();
-
-
-        BigDecimal totalAmount = taskRepository.getTotalAmountCollected();
         report.setTotalAmountCollected(totalAmount != null ? totalAmount : BigDecimal.ZERO);
-
-        List<Object[]> taskByDay = taskRepository.getTasksGroupedByDay();
 
         if (!taskByDay.isEmpty()) {
             report.setMostActiveDay((String) taskByDay.get(0)[0]);
             report.setLeastActiveDay((String) taskByDay.get(taskByDay.size() - 1)[0]);
         }
 
-        Map<String, Long> taskMap = taskByDay.stream().collect(Collectors.toMap(
-                r -> (String) r[0],
-                r -> ((Number) r[1]).longValue()
-        ));
+        Map<String, Long> taskMap = taskByDay.stream()
+                .collect(Collectors.toMap(r -> (String) r[0], r -> ((Number) r[1]).longValue()));
 
         report.setTasksPerDay(taskMap);
         report.setTotalTasks(taskMap.values().stream().mapToLong(Long::longValue).sum());
 
         return report;
     }
+
 }
