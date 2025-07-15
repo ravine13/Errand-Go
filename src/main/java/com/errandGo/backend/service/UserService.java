@@ -60,7 +60,7 @@ public class UserService {
             existingUser.getAccount().setRole(updatedUser.getAccount().getRole());
             existingUser.getAccount().setDeviceToken(updatedUser.getAccount().getDeviceToken());
             existingUser.getAccount().setPhoneNumber(updatedUser.getAccount().getPhoneNumber());
-            existingUser.getAccount().setProfilePicture(updatedUser.getAccount().getProfilePicture());
+            existingUser.getAccount().getProfile().setProfilePictureUrl(updatedUser.getAccount().getProfile().getProfilePictureUrl());
             existingUser.getAccount().setLatitude(updatedUser.getAccount().getLatitude());
             existingUser.getAccount().setLongitude(updatedUser.getAccount().getLongitude());
         }

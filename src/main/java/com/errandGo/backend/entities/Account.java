@@ -41,4 +41,9 @@ public class Account {
     @Column(name = "longitude")
     private Double longitude;
 
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Profile profile;
+
+
+
 }
