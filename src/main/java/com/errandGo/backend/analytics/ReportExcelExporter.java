@@ -1,50 +1,19 @@
-package com.errandGo.backend.service;
+package com.errandGo.backend.export;
 
 import com.errandGo.backend.dto.AdminReportDTO;
-import com.errandGo.backend.repositories.TaskRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-@Service
-public class AnalyticsService {
-    private final TaskRepository taskRepository;
+@Component
+public class ReportExcelExporter {
 
-    public AnalyticsService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
-
-    public AdminReportDTO generateAdminReport(LocalDateTime start, LocalDateTime end) {
-        BigDecimal totalAmount = taskRepository.getTotalAmountCollected();
-        List<Object[]> taskByDay = taskRepository.getTasksGroupedByDayBetween(start, end);
-
-        AdminReportDTO report = new AdminReportDTO();
-        report.setTotalAmountCollected(totalAmount != null ? totalAmount : BigDecimal.ZERO);
-
-        if (!taskByDay.isEmpty()) {
-            report.setMostActiveDay((String) taskByDay.get(0)[0]);
-            report.setLeastActiveDay((String) taskByDay.get(taskByDay.size() - 1)[0]);
-        }
-
-        Map<String, Long> taskMap = taskByDay.stream()
-                .collect(Collectors.toMap(r -> (String) r[0], r -> ((Number) r[1]).longValue()));
-
-        report.setTasksPerDay(taskMap);
-        report.setTotalTasks(taskMap.values().stream().mapToLong(Long::longValue).sum());
-
-        return report;
-    }
-
-    public ByteArrayInputStream exportReportToExcel(AdminReportDTO report) throws IOException {
+    public ByteArrayInputStream exportToExcel(AdminReportDTO report) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Admin Report");
 

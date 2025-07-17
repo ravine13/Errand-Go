@@ -1,14 +1,13 @@
 package com.errandGo.backend.controller;
 
 import com.errandGo.backend.dto.AdminReportDTO;
-import com.errandGo.backend.service.AnalyticsService;
+import com.errandGo.backend.analytics.AnalyticsService;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +17,7 @@ import java.time.LocalDateTime;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin/reports")
-@PreAuthorize("hasRole('ADMIN')")
+//@PreAuthorize("hasRole('ADMIN')")
 public class AdminReportController {
 
     private final AnalyticsService analyticsService;

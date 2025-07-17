@@ -48,7 +48,7 @@ public class AuthController {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getEmail(),
+                            authenticationRequest.getUsername(),
                             authenticationRequest.getPassword()
                     )
             );
@@ -56,8 +56,8 @@ public class AuthController {
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.UNAUTHORIZED);
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-        Account account = accountRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Account not found by email"));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        Account account = accountRepository.findByUsername(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Account not found by email"));
 
         String jwt = jwtUtil.generateToken(account);
 
