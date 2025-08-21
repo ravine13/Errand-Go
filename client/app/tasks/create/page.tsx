@@ -60,7 +60,7 @@ export default function CreateTaskPage() {
         status: "PENDING",
       }
 
-      const response = await fetch("https://errand-go.railway.internal/api/tasks", {
+      const response = await fetch("http://localhost:9123/api/tasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch("https://errand-go.railway.internal/authenticate", {
+      const response = await fetch("http://localhost:9123/authenticate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (username: string, password: string, email: string): Promise<boolean> => {
     try {
-      const response = await fetch("https://errand-go.railway.internal/register", {
+      const response = await fetch("http://localhost:9123/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

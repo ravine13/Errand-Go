@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       const endDate = new Date().toISOString()
 
       const response = await fetch(
-        `https://errand-go.railway.internal/admin/reports/export/excel?start=${startDate}&end=${endDate}`,
+        `http://localhost:9123/admin/reports/export/excel?start=${startDate}&end=${endDate}`,
         {
           method: "GET",
           headers: {
