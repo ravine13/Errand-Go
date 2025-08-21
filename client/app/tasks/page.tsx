@@ -160,7 +160,7 @@ export default function TasksPage() {
     }
 
     try {
-      const response = await fetch("https://errand-go.railway.internal/task-attempts", {
+      const response = await fetch("http://localhost:9123/task-attempts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
