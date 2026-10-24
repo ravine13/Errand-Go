@@ -2,10 +2,8 @@ package com.errandGo.backend.controller;
 
 import com.errandGo.backend.dto.RegisterRequest;
 import com.errandGo.backend.entities.Account;
-import com.errandGo.backend.entities.ErrandBoy;
 import com.errandGo.backend.entities.User;
 import com.errandGo.backend.repositories.AccountRepository;
-import com.errandGo.backend.repositories.ErrandBoyRepository;
 import com.errandGo.backend.repositories.UserRepository;
 import com.errandGo.backend.security.AuthCookies;
 import com.errandGo.backend.security.JwtUtil;
@@ -44,7 +42,6 @@ public class AuthController {
     private final AuthCookies authCookies;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
-    private final ErrandBoyRepository errandBoyRepository;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/authenticate")
@@ -76,31 +73,22 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use");
         }
 
-        Role role = request.getAccountType() == RegisterRequest.AccountType.RUNNER ? Role.ERRAND_BOY : Role.USER;
-
         Account account = new Account();
         account.setUsername(username);
         account.setEmail(email);
         account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setPhoneNumber(request.getPhoneNumber());
         account.setLocation(request.getLocation());
-        account.setRole(role);
+        account.setRole(Role.USER); // public signup is always a USER
         account = accountRepository.saveAndFlush(account); // surfaces constraint violations here
 
-        if (role == Role.ERRAND_BOY) {
-            ErrandBoy errandBoy = new ErrandBoy();
-            errandBoy.setAccount(account);
-            errandBoy.setFullName(account.getUsername());
-            errandBoyRepository.save(errandBoy);
-        } else {
-            User user = new User();
-            user.setAccount(account);
-            userRepository.save(user);
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body("Account registered successfully as " + role.name());
+        User user = new User();
+        user.setAccount(account);
+        userRepository.save(user);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account registered successfully");
     }
 
-    /** The frontend calls this on page load to learn who is logged in. */
     @GetMapping("/auth/me")
     public Map<String, Object> me(Authentication authentication) {
         return profile(accountRepository.findByUsername(authentication.getName()).orElseThrow());

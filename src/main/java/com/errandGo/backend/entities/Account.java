@@ -49,4 +49,7 @@ public class Account {
     @Column(name = "token_valid_after")
     private Instant tokenValidAfter;
 
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword = false;
+
 }

@@ -6,10 +6,12 @@ import com.errandGo.backend.repositories.AccountRepository;
 import com.errandGo.backend.repositories.NotificationRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -31,6 +33,14 @@ public class NotificationService {
     // ✅ Get all notifications for a specific account
     public List<Notification> getNotificationsByAccountId(Long accountId) {
         return notificationRepository.findByAccountId(accountId);
+    }
+
+    public void sendApproval(String to, String loginEmail, String tempPassword) {
+        log.warn("[DEV ONLY] To {}: approved. Login: {} Temporary password: {}", to, loginEmail, tempPassword);
+    }
+
+    public void sendRejection(String to, String reason) {
+        log.info("To {}: your errand boy application was rejected. Reason: {}", to, reason);
     }
 
     // ✅ Create and send a notification

@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 // Public endpoints
                                 .requestMatchers("/authenticate", "/register", "/auth/logout", "/test/**").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/error/**").permitAll()
 //                        .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/errand-boy/**").hasRole("ERRAND_BOY")
                                 .requestMatchers("/user/**").hasRole("USER")
