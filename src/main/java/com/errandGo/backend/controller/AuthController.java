@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,8 +29,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.errandGo.backend.entities.Account;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 @RestController
@@ -106,7 +110,14 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
+    public ResponseEntity<Void> logout(Authentication authentication, HttpServletResponse response) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            accountRepository.findByUsername(authentication.getName()).ifPresent(a -> {
+                a.setTokenValidAfter(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+                accountRepository.save(a);
+            });
+        }
         response.addHeader(HttpHeaders.SET_COOKIE, cookie("", Duration.ZERO).toString());
         return ResponseEntity.noContent().build();
     }

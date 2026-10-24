@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import model.Role;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "account")
 @Data
@@ -44,6 +46,7 @@ public class Account {
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Profile profile;
 
-
+    @Column(name = "token_valid_after")
+    private Instant tokenValidAfter;
 
 }

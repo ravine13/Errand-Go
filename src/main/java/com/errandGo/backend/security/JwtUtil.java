@@ -63,4 +63,8 @@ public class JwtUtil {
         return claims.getSubject().equals(userDetails.getUsername())
                 && claims.getExpiration().after(new Date());
     }
+
+    public Date extractIssuedAt(String token) {
+        return extractClaim(token, Claims::getIssuedAt);
+    }
 }

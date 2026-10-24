@@ -1,6 +1,8 @@
 package com.errandGo.backend.security;
 
 import com.errandGo.backend.controller.AuthController;
+import com.errandGo.backend.entities.Account;
+import com.errandGo.backend.repositories.AccountRepository;
 import com.errandGo.backend.service.CustomUserDetailsService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -29,6 +31,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
+    private final AccountRepository accountRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -48,14 +51,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 String token = cookie.getValue();
                 UserDetails user = userDetailsService.loadUserByUsername(jwtUtil.extractUsername(token));
-                if (jwtUtil.validateToken(token, user)) {
+                Account account = accountRepository.findByUsername(user.getUsername())
+                        .orElseThrow(() -> new UsernameNotFoundException("Account not found"));
+
+                boolean revoked = account.getTokenValidAfter() != null
+                        && jwtUtil.extractIssuedAt(token).toInstant().isBefore(account.getTokenValidAfter());
+
+                if (!revoked && jwtUtil.validateToken(token, user)) {
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
-                // expired, malformed or unknown-user token: treat the request as logged out
+                // expired, malformed, revoked or unknown-user token: treat the request as logged out
             }
         }
         chain.doFilter(request, response);

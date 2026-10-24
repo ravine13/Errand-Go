@@ -3,6 +3,7 @@ package com.errandGo.backend.security;
 import com.errandGo.backend.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
+    private final LoginRateLimitFilter loginRateLimitFilter;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
 
@@ -48,12 +50,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                                 // Public endpoints
                                 .requestMatchers("/authenticate", "/register", "/auth/logout", "/test/**").permitAll()
-                                .requestMatchers("/admin/reports/**").hasRole("ADMIN")
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
 //                        .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/errand-boy/**").hasRole("ERRAND_BOY")
                                 .requestMatchers("/user/**").hasRole("USER")
                                 .anyRequest().authenticated()
                 )
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -87,5 +90,18 @@ public class SecurityConfig {
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         return daoAuthenticationProvider;
+    }
+    @Bean
+    public FilterRegistrationBean<JwtRequestFilter> jwtFilterRegistration(JwtRequestFilter filter) {
+        FilterRegistrationBean<JwtRequestFilter> reg = new FilterRegistrationBean<>(filter);
+        reg.setEnabled(false);
+        return reg;
+    }
+
+    @Bean
+    public FilterRegistrationBean<LoginRateLimitFilter> rateLimitFilterRegistration(LoginRateLimitFilter filter) {
+        FilterRegistrationBean<LoginRateLimitFilter> reg = new FilterRegistrationBean<>(filter);
+        reg.setEnabled(false);
+        return reg;
     }
 }
