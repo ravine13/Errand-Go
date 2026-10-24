@@ -16,7 +16,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    public static final long EXPIRATION_MS = 1000L * 60 * 60 * 10; // 10 hours
+    public static final long EXPIRATION_MS = 1000L * 60 * 60 * 3; //
+    public static final long REFRESH_AFTER_MS = 1000L * 60 * 60;
 
     private final SecretKey key;
 

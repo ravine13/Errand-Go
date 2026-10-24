@@ -7,16 +7,15 @@ import com.errandGo.backend.entities.User;
 import com.errandGo.backend.repositories.AccountRepository;
 import com.errandGo.backend.repositories.ErrandBoyRepository;
 import com.errandGo.backend.repositories.UserRepository;
+import com.errandGo.backend.security.AuthCookies;
 import com.errandGo.backend.security.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import model.AuthenticationRequest;
 import model.Role;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,9 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import com.errandGo.backend.entities.Account;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -44,16 +41,15 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final AuthCookies authCookies;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final ErrandBoyRepository errandBoyRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.cookie.secure:true}")
-    private boolean secureCookie;
-
     @PostMapping("/authenticate")
-    public ResponseEntity<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest request,
+                                   HttpServletResponse response) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -61,8 +57,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect username or password");
         }
         Account account = accountRepository.findByUsername(request.getUsername()).orElseThrow();
-        String jwt = jwtUtil.generateToken(account);
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie(jwt, Duration.ofMillis(JwtUtil.EXPIRATION_MS)).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                authCookies.create(jwtUtil.generateToken(account)).toString());
         return ResponseEntity.ok(profile(account));
     }
 
@@ -72,6 +68,7 @@ public class AuthController {
         String username = request.getUsername().trim();
         String email = request.getEmail().trim().toLowerCase();
 
+        // Fast path for friendly messages; the DB unique constraints are the real guarantee
         if (accountRepository.findByUsername(username).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
@@ -88,7 +85,7 @@ public class AuthController {
         account.setPhoneNumber(request.getPhoneNumber());
         account.setLocation(request.getLocation());
         account.setRole(role);
-        account = accountRepository.save(account);
+        account = accountRepository.saveAndFlush(account); // surfaces constraint violations here
 
         if (role == Role.ERRAND_BOY) {
             ErrandBoy errandBoy = new ErrandBoy();
@@ -118,18 +115,8 @@ public class AuthController {
                 accountRepository.save(a);
             });
         }
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie("", Duration.ZERO).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, authCookies.clear().toString());
         return ResponseEntity.noContent().build();
-    }
-
-    private ResponseCookie cookie(String value, Duration maxAge) {
-        return ResponseCookie.from(COOKIE_NAME, value)
-                .httpOnly(true)
-                .secure(secureCookie)
-                .sameSite("Strict")
-                .path("/")
-                .maxAge(maxAge)
-                .build();
     }
 
     private Map<String, Object> profile(Account a) {
