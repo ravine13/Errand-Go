@@ -3,72 +3,64 @@ package com.errandGo.backend.security;
 import com.errandGo.backend.entities.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 @Component
 public class JwtUtil {
 
-    private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    public static final long EXPIRATION_MS = 1000L * 60 * 60 * 10; // 10 hours
 
-    public JwtUtil() throws NoSuchAlgorithmException {}
+    private final SecretKey key;
+
+    public JwtUtil(@Value("${app.jwt.secret}") String secret) {
+        byte[] bytes = Decoders.BASE64.decode(secret);
+        if (bytes.length < 32) {
+            throw new IllegalStateException("app.jwt.secret must decode to at least 32 bytes");
+        }
+        this.key = Keys.hmacShaKeyFor(bytes);
+    }
+
+    public String generateToken(Account account) {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .setSubject(account.getUsername())
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + EXPIRATION_MS))
+                .signWith(key)
+                .compact();
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
-    }
-
-    public String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
     }
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        return resolver.apply(extractAllClaims(token));
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    // Accepts Account entity instead of User
-    public String generateToken(Account account) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", account.getRole().name()); // Embed role
-        return createToken(claims, account.getUsername());
-    }
-
-    private String createToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(key)
-                .compact();
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean validateToken(String token, UserDetails userDetails) {
+        Claims claims = extractAllClaims(token);
+        return claims.getSubject().equals(userDetails.getUsername())
+                && claims.getExpiration().after(new Date());
     }
 }

@@ -1,6 +1,7 @@
 package com.errandGo.backend.repositories;
 
 import com.errandGo.backend.entities.Account;
+import model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +12,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByUsername(String username);
     Optional<Account> findByEmail(String email);
     Optional<Account> findByDeviceToken(String deviceToken);
+    boolean existsByRole(Role role);
 }

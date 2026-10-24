@@ -1,12 +1,14 @@
 package model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class AuthenticationRequest {
 
-    private String username;
-    private String password;
+    @NotBlank private String username;
+    @NotBlank private String password;
 
 
 }
