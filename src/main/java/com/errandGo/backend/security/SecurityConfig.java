@@ -58,6 +58,8 @@ public class SecurityConfig {
                                 .requestMatchers("/user/**").hasRole("USER")
                                 .anyRequest().authenticated()
                                 .requestMatchers("/tasks/**").hasRole("ADMIN")
+                                .requestMatchers("/users/**").hasRole("ADMIN")
+                                .requestMatchers("/task-attempts/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/categories/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/categories/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/categories/**").hasRole("ADMIN")
