@@ -8,6 +8,4 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    @Query("SELECT r FROM Category r WHERE r.id = :id ")
-    Optional<Category> findById(Long id);
 }

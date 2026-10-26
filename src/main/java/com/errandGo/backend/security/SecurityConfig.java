@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -56,6 +57,10 @@ public class SecurityConfig {
                                 .requestMatchers("/errand-boy/**").hasRole("ERRAND_BOY")
                                 .requestMatchers("/user/**").hasRole("USER")
                                 .anyRequest().authenticated()
+                                .requestMatchers("/tasks/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/categories/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/categories/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/categories/**").hasRole("ADMIN")
                 )
                 .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
